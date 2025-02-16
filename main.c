@@ -40,7 +40,31 @@ void setup_pwm(uint gpio); // Função para configurar pinos com pwm
 
 int main(void)
 {
-    // Inicialização e lógica do programa
+    // Ativando comunição serial
+    stdio_init_all();
+
+    // Configuração do ADC
+    adc_init();
+    adc_gpio_init(VRX_PIN);
+    adc_gpio_init(VRY_PIN);
+
+    // Inicializando 2 botões
+    gpio_init(SW_PIN);
+    gpio_init(BUTTON_A);
+
+    // Configurando direção dos botões para entrada
+    gpio_set_dir(SW_PIN, GPIO_IN);
+    gpio_set_dir(BUTTON_A, GPIO_IN);
+
+    // Ativando pull up interno para os botões.
+    gpio_pull_up(SW_PIN);
+    gpio_pull_up(BUTTON_A);
+
+    // Configuração do PWM para LEDs
+    setup_pwm(LED_RED_PIN);
+    setup_pwm(LED_BLUE_PIN);
+    gpio_init(LED_GREEN_PIN);
+    gpio_set_dir(LED_GREEN_PIN, GPIO_OUT);
 
     return 0;
 }
