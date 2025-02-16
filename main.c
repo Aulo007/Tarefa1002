@@ -28,8 +28,14 @@ static const uint32_t I2C_SCL = 15;
 #define SQUARE_SIZE 8
 #define I2C_ADDR 0x3C
 
+
+
 int main(void)
 {
     // Inicialização e lógica do programa
+
+
+
+
     return 0;
 }
