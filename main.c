@@ -89,12 +89,29 @@ int main(void)
 
     while (true)
     {
-        adc_select_input(0); // Seleciona o ADC para eixo X. O pino 26 como entrada analógica
-        adc_value_x = adc_read();
-        adc_select_input(1); // Seleciona o ADC para eixo Y. O pino 27 como entrada analógica
-        adc_value_y = adc_read();
 
-        
+        /*
+        Explicação sobre os valores lidos do ADC, acontece que, ao usar o código exemplo, no qual configura o pino 26 como eixo x e 27 como eixo y, uma coisa me incomodou
+        no caso, ele lia nessa configuração o x na direção vertical do joystick e y na honrizontal. O 4095 - adc_read é pq mesmo após trocar esses pinos de eixo ele lia o 
+        valor de y para cima como o menor valor de y e o de x para esquerda como o maior valor de y, logo, eu troquei isso, portanto, quando levo o joystick para cima tenho
+        o máximo valor e quando levo o x para direita o máximo valor.
+        */
+
+        // Seleciona o ADC para eixo Y. O pino 26 como entrada analógica
+        adc_select_input(0);
+        adc_value_y = 4095 - adc_read(); // Inverte o valor lido do eixo Y
+
+        // Seleciona o ADC para eixo X. O pino 27 como entrada analógica
+        adc_select_input(1);
+        adc_value_x = 4095 - adc_read(); // Inverte o valor lido do eixo X
+
+        printf("Valor em y: %d \n", adc_value_y); // prints para poder debbugar o código
+        printf("Valor em x: %d \n", adc_value_x); // prints para poder debbugar o código
+
+        sleep_ms(200);
+
+
+
     }
 
     return 0;
