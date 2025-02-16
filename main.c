@@ -37,9 +37,41 @@ static volatile uint32_t last_button_time = 0;
 const uint32_t DEBOUNCE_DELAY = 200000; // 200ms em microssegundos
 
 void setup_pwm(uint gpio);                               // Função para configurar pinos com pwm
-void set_pwm(uint gpio, uint16_t value); // Função para setar valor do pwm
+void set_pwm(uint gpio, uint16_t value);                 // Função para setar valor do pwm
 uint16_t map_joystick_to_pwm(uint16_t value);            // Função para mapear valores do joystick para PWM
 static void gpio_irq_handle(uint gpio, uint32_t events); // Função para a interrupção
+
+// Estrutura para armazenar os limites de cada estilo de borda
+typedef struct
+{
+    uint8_t left;
+    uint8_t right;
+    uint8_t top;
+    uint8_t bottom;
+} BorderLimits;
+
+// Array global para armazenar os limites de cada estilo
+static BorderLimits border_limits[] = {
+    {1, WIDTH - SQUARE_SIZE - 1, 1, HEIGHT - SQUARE_SIZE - 1}, // Estilo 0: Minimalista
+    {4, WIDTH - SQUARE_SIZE - 4, 4, HEIGHT - SQUARE_SIZE - 4}, // Estilo 1: Moldura dupla
+    {5, WIDTH - SQUARE_SIZE - 5, 5, HEIGHT - SQUARE_SIZE - 5}, // Estilo 2: Cantos estilizados
+    {2, WIDTH - SQUARE_SIZE - 2, 2, HEIGHT - SQUARE_SIZE - 2}, // Estilo 3: Efeito 3D
+    {1, WIDTH - SQUARE_SIZE - 1, 1, HEIGHT - SQUARE_SIZE - 1}, // Estilo 4: Cantos arredondados
+    {6, WIDTH - SQUARE_SIZE - 6, 6, HEIGHT - SQUARE_SIZE - 6}  // Estilo 5: Efeito profundidade
+};
+
+// Função para aplicar limites baseados no estilo atual
+void apply_square_limits(int16_t *square_x, int16_t *square_y, uint8_t style)
+{
+    BorderLimits limits = border_limits[style % 6];
+
+    // Aplica os limites
+    *square_x = (*square_x < limits.left) ? limits.left : (*square_x > limits.right) ? limits.right
+                                                                                     : *square_x;
+
+    *square_y = (*square_y < limits.top) ? limits.top : (*square_y > limits.bottom) ? limits.bottom
+                                                                                    : *square_y;
+}
 
 int main(void)
 {
@@ -137,13 +169,9 @@ int main(void)
         // Calcula a posição do quadrado no eixo Y (invertido(sinal de mensos) porque estava com erro.)
         square_y = (HEIGHT / 2 - SQUARE_SIZE / 2) - ((int32_t)(adc_value_y - 2048) * (HEIGHT - SQUARE_SIZE)) / 4096;
 
-        // Limites do quadrado no eixo X
-        square_x = (square_x < 0) ? 0 : (square_x > WIDTH - SQUARE_SIZE) ? WIDTH - SQUARE_SIZE
-                                                                         : square_x;
+        // Limites do quadrado no eixo X e Y de forma dinâmica
 
-        // Limites do quadrado no eixo Y
-        square_y = (square_y < 0) ? 0 : (square_y > HEIGHT - SQUARE_SIZE) ? HEIGHT - SQUARE_SIZE
-                                                                          : square_y;
+        apply_square_limits(&square_x, &square_y, border_style);
 
         // Atualização do ssd
         ssd1306_fill(&ssd, false);
@@ -205,9 +233,6 @@ static void gpio_irq_handle(uint gpio, uint32_t events)
         {
             led_green_state = !led_green_state;
             gpio_put(LED_GREEN_PIN, led_green_state);
-            ssd1306_fill(&ssd, false);
-            draw_border(&ssd, border_style);
-            ssd1306_send_data(&ssd);
 
             border_style++;
             border_style = (border_style >= 5) ? 0 : border_style;
@@ -218,6 +243,4 @@ static void gpio_irq_handle(uint gpio, uint32_t events)
             pwm_enabled = !pwm_enabled; // Troca estado do pwm toda vez que for apertado
         }
     }
-
-
 }
