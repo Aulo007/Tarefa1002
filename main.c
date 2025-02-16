@@ -38,6 +38,8 @@ const uint32_t DEBOUNCE_DELAY = 200000; // 200ms em microssegundos
 
 void setup_pwm(uint gpio); // Função para configurar pinos com pwm
 
+uint16_t map_joystick_to_pwm(uint16_t value); // Função para mapear valores do joystick para PWM {
+
 int main(void)
 {
     // Ativando comunição serial
@@ -108,6 +110,7 @@ int main(void)
 
         printf("Valor em y: %d \n", adc_value_y); // prints para poder debbugar o código
         printf("Valor em x: %d \n", adc_value_x); // prints para poder debbugar o código
+        
                                                   /*
                                                   testes
                                                   sleep_ms(200);
@@ -143,8 +146,8 @@ int main(void)
 
         // configurando pwm pros leds.
 
-        set_pwm(LED_RED_PIN, adc_value_y - 2048);
-        set_pwm(LED_BLUE_PIN, adc_value_x - 2048);
+        set_pwm(LED_BLUE_PIN, map_joystick_to_pwm(adc_value_y));
+        set_pwm(LED_RED_PIN, map_joystick_to_pwm(adc_value_x));
 
         sleep_ms(20); // Pequeno delay para estabilidade
     }
@@ -170,4 +173,11 @@ void set_pwm(uint gpio, uint16_t value)
         pwm_set_gpio_level(gpio, value);
     else
         pwm_set_gpio_level(gpio, 0);
+}
+
+// Função para mapear valores do joystick para PWM
+uint16_t map_joystick_to_pwm(uint16_t value) {
+    int16_t centered = value - 2048;
+    if (abs(centered) < 100) return 0; // Zona morta
+    return (uint16_t)abs(centered);
 }
