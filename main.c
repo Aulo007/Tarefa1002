@@ -30,7 +30,7 @@ static const uint32_t I2C_SCL = 15;
 
 // Variáveis globais
 static ssd1306_t display;
-static volatile bool led_green_state = false;
+static volatile bool led_green_state = false; // variável para ficar alterando o estado do led verde ao apertar o botão do joystick
 static volatile bool pwm_enabled = true;
 static volatile uint8_t border_style = 0;
 static volatile uint32_t last_button_time = 0;
