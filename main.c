@@ -141,6 +141,11 @@ int main(void)
         draw_square(&ssd, square_x, square_y);
         ssd1306_send_data(&ssd);
 
+        // configurando pwm pros leds.
+
+        set_pwm(LED_RED_PIN, adc_value_y - 2048);
+        set_pwm(LED_BLUE_PIN, adc_value_x - 2048);
+
         sleep_ms(20); // Pequeno delay para estabilidade
     }
 
