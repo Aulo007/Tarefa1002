@@ -93,7 +93,7 @@ int main(void)
     int16_t square_y;
 
     // Configuração da interrupção com o callback
-    gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
+    //gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
     gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
 
     while (true)
@@ -199,13 +199,25 @@ static void gpio_irq_handle(uint gpio, uint32_t events)
         return 0; // Ou seja, se não der o tempo do debouce já mata o código aqui.
 
     last_button_time = current_time_us;
+/*
 
     if (gpio == SW_PIN)
     {
+        led_green_state = !led_green_state;
+        gpio_put(LED_GREEN_PIN, led_green_state);
+        ssd1306_fill(&ssd, false);
+        draw_border(&ssd, border_style);
+        ssd1306_send_data(&ssd);
 
+        border_style++;
+        border_style = (border_style >= 5) ? 0 : border_style;
     }
-    else if
+
+
+*/
+
+    if (gpio == BUTTON_A)
     {
-        
+        pwm_enabled = !pwm_enabled; // Troca estado do pwm toda vez que for apertado
     }
 }
