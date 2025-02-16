@@ -36,9 +36,9 @@ static volatile uint8_t border_style = 0;
 static volatile uint32_t last_button_time = 0;
 const uint32_t DEBOUNCE_DELAY = 200000; // 200ms em microssegundos
 
-void setup_pwm(uint gpio); // Função para configurar pinos com pwm
-
-uint16_t map_joystick_to_pwm(uint16_t value); // Função para mapear valores do joystick para PWM {
+void setup_pwm(uint gpio);                               // Função para configurar pinos com pwm
+uint16_t map_joystick_to_pwm(uint16_t value);            // Função para mapear valores do joystick para PWM
+static void gpio_irq_handle(uint gpio, uint32_t events); // Função para a interrupção
 
 int main(void)
 {
@@ -110,21 +110,21 @@ int main(void)
 
         printf("Valor em y: %d \n", adc_value_y); // prints para poder debbugar o código
         printf("Valor em x: %d \n", adc_value_x); // prints para poder debbugar o código
-        
-                                                  /*
-                                                  testes
-                                                  sleep_ms(200);
-                                          
-                                                      for (int i = 0; i < 6; i++)
-                                                      {
-                                                          draw_border(&ssd, i);
-                                                          ssd1306_send_data(&ssd);
-                                                          sleep_ms(1000);
-                                                          ssd1306_fill(&ssd, false);
-                                                          ssd1306_send_data(&ssd);
-                                                      }
-                                          
-                                                  */
+
+        /*
+        testes
+        sleep_ms(200);
+
+            for (int i = 0; i < 6; i++)
+            {
+                draw_border(&ssd, i);
+                ssd1306_send_data(&ssd);
+                sleep_ms(1000);
+                ssd1306_fill(&ssd, false);
+                ssd1306_send_data(&ssd);
+            }
+
+        */
 
         // Calcula a posição do quadrado no eixo X
         square_x = (WIDTH / 2 - SQUARE_SIZE / 2) + ((int32_t)(adc_value_x - 2048) * (WIDTH - SQUARE_SIZE)) / 4096;
@@ -133,10 +133,12 @@ int main(void)
         square_y = (HEIGHT / 2 - SQUARE_SIZE / 2) - ((int32_t)(adc_value_y - 2048) * (HEIGHT - SQUARE_SIZE)) / 4096;
 
         // Limites do quadrado no eixo X
-        square_x = (square_x < 0) ? 0 : (square_x > WIDTH - SQUARE_SIZE) ? WIDTH - SQUARE_SIZE : square_x;
+        square_x = (square_x < 0) ? 0 : (square_x > WIDTH - SQUARE_SIZE) ? WIDTH - SQUARE_SIZE
+                                                                         : square_x;
 
         // Limites do quadrado no eixo Y
-        square_y = (square_y < 0) ? 0 : (square_y > HEIGHT - SQUARE_SIZE) ? HEIGHT - SQUARE_SIZE : square_y;
+        square_y = (square_y < 0) ? 0 : (square_y > HEIGHT - SQUARE_SIZE) ? HEIGHT - SQUARE_SIZE
+                                                                          : square_y;
 
         // Atualização do ssd
         ssd1306_fill(&ssd, false);
@@ -176,8 +178,21 @@ void set_pwm(uint gpio, uint16_t value)
 }
 
 // Função para mapear valores do joystick para PWM
-uint16_t map_joystick_to_pwm(uint16_t value) {
+uint16_t map_joystick_to_pwm(uint16_t value)
+{
     int16_t centered = value - 2048;
-    if (abs(centered) < 100) return 0; // Zona morta
+    if (abs(centered) < 100)
+        return 0; // Zona morta
     return (uint16_t)abs(centered);
+}
+
+static void gpio_irq_handle(uint gpio, uint32_t events)
+{
+    // Cria uma varíavel que pega o tempo atual do sistema em microsegundos.
+    uint32_t current_time_us = to_us_since_boot(get_absolute_time());
+
+    if (current_time_us - last_button_time < DEBOUNCE_DELAY)
+        return 0; // Ou seja, se não der o tempo do debouce já mata o código aqui.
+
+    last_button_time = current_time_us;
 }
