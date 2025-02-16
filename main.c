@@ -37,6 +37,7 @@ static volatile uint32_t last_button_time = 0;
 const uint32_t DEBOUNCE_DELAY = 200000; // 200ms em microssegundos
 
 void setup_pwm(uint gpio);                               // Função para configurar pinos com pwm
+void set_pwm(uint gpio, uint16_t value); // Função para setar valor do pwm
 uint16_t map_joystick_to_pwm(uint16_t value);            // Função para mapear valores do joystick para PWM
 static void gpio_irq_handle(uint gpio, uint32_t events); // Função para a interrupção
 
@@ -93,7 +94,7 @@ int main(void)
     int16_t square_y;
 
     // Configuração da interrupção com o callback
-    //gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
+    gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
     gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
 
     while (true)
@@ -195,29 +196,28 @@ static void gpio_irq_handle(uint gpio, uint32_t events)
     // Cria uma varíavel que pega o tempo atual do sistema em microsegundos.
     uint32_t current_time_us = to_us_since_boot(get_absolute_time());
 
-    if (current_time_us - last_button_time < DEBOUNCE_DELAY)
-        return 0; // Ou seja, se não der o tempo do debouce já mata o código aqui.
+    if (current_time_us - last_button_time > DEBOUNCE_DELAY)
 
-    last_button_time = current_time_us;
-/*
-
-    if (gpio == SW_PIN)
     {
-        led_green_state = !led_green_state;
-        gpio_put(LED_GREEN_PIN, led_green_state);
-        ssd1306_fill(&ssd, false);
-        draw_border(&ssd, border_style);
-        ssd1306_send_data(&ssd);
+        last_button_time = current_time_us;
 
-        border_style++;
-        border_style = (border_style >= 5) ? 0 : border_style;
+        if (gpio == SW_PIN)
+        {
+            led_green_state = !led_green_state;
+            gpio_put(LED_GREEN_PIN, led_green_state);
+            ssd1306_fill(&ssd, false);
+            draw_border(&ssd, border_style);
+            ssd1306_send_data(&ssd);
+
+            border_style++;
+            border_style = (border_style >= 5) ? 0 : border_style;
+        }
+
+        else if (gpio == BUTTON_A)
+        {
+            pwm_enabled = !pwm_enabled; // Troca estado do pwm toda vez que for apertado
+        }
     }
 
 
-*/
-
-    if (gpio == BUTTON_A)
-    {
-        pwm_enabled = !pwm_enabled; // Troca estado do pwm toda vez que for apertado
-    }
 }
