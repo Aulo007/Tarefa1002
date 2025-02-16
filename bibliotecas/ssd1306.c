@@ -196,6 +196,10 @@ void ssd1306_draw_char(ssd1306_t *ssd, char c, uint8_t x, uint8_t y)
   }
 }
 
+void draw_square(ssd1306_t *display, int x, int y) {
+    ssd1306_rect(display, y, x, SQUARE_SIZE, SQUARE_SIZE, true, true);
+}
+
 // Desenha borda estilizada no display (0-5 estilos)
 void draw_border(ssd1306_t *display, uint8_t style)
 {

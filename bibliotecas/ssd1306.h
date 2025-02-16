@@ -4,6 +4,7 @@
 
 #define WIDTH 128
 #define HEIGHT 64
+#define SQUARE_SIZE 8
 
 typedef enum {
   SET_CONTRAST = 0x81,
@@ -48,3 +49,4 @@ void ssd1306_vline(ssd1306_t *ssd, uint8_t x, uint8_t y0, uint8_t y1, bool value
 void ssd1306_draw_char(ssd1306_t *ssd, char c, uint8_t x, uint8_t y);
 void ssd1306_draw_string(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y);
 void draw_border(ssd1306_t *display, uint8_t style);
+void draw_square(ssd1306_t *display, int x, int y);
