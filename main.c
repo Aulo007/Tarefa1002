@@ -18,18 +18,18 @@ static const uint32_t LED_GREEN_PIN = 11;
 static const uint32_t LED_BLUE_PIN = 12;
 static const uint32_t LED_RED_PIN = 13;
 
-// Definindo pinos do display
+// Definindo pinos do ssd
 static const uint32_t I2C_SDA = 14;
 static const uint32_t I2C_SCL = 15;
 
-// Definindo constantes para os parâmetros do I2C e do display
+// Definindo constantes para os parâmetros do I2C e do ssd
 #define I2C_PORT i2c1
 #define I2C_SDA 14
 #define I2C_SCL 15
 #define endereco 0x3C
 
 // Variáveis globais
-static ssd1306_t ssd;                         // Variável global para o display
+static ssd1306_t ssd;                         // Variável global para o ssd
 static volatile bool led_green_state = false; // variável para ficar alterando o estado do led verde ao apertar o botão do joystick
 static volatile bool pwm_enabled = true;
 static volatile uint8_t border_style = 0;
@@ -75,24 +75,27 @@ int main(void)
     gpio_pull_up(I2C_SDA);                     // Ativa o pull-up no pino de dados
     gpio_pull_up(I2C_SCL);                     // Ativa o pull-up no pino de clock
 
-    // Inicialização e configuração do display SSD1306                                               // Cria a estrutura do display
-    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display com as especificações fornecidas
-    ssd1306_config(&ssd);                                         // Configura os parâmetros do display
-    ssd1306_send_data(&ssd);                                      // Envia os dados iniciais de configuração para o display
+    // Inicialização e configuração do ssd SSD1306                                               // Cria a estrutura do ssd
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o ssd com as especificações fornecidas
+    ssd1306_config(&ssd);                                         // Configura os parâmetros do ssd
+    ssd1306_send_data(&ssd);                                      // Envia os dados iniciais de configuração para o ssd
 
-    // Limpeza do display. O display inicia com todos os pixels apagados.
-    ssd1306_fill(&ssd, false); // Preenche o display com o valor especificado (false = apagado)
-    ssd1306_send_data(&ssd);   // Envia os dados de preenchimento para o display
+    // Limpeza do ssd. O ssd inicia com todos os pixels apagados.
+    ssd1306_fill(&ssd, false); // Preenche o ssd com o valor especificado (false = apagado)
+    ssd1306_send_data(&ssd);   // Envia os dados de preenchimento para o ssd
 
     uint16_t adc_value_x;
     uint16_t adc_value_y;
+
+    int16_t square_x;
+    int16_t square_y;
 
     while (true)
     {
 
         /*
         Explicação sobre os valores lidos do ADC, acontece que, ao usar o código exemplo, no qual configura o pino 26 como eixo x e 27 como eixo y, uma coisa me incomodou
-        no caso, ele lia nessa configuração o x na direção vertical do joystick e y na honrizontal. 
+        no caso, ele lia nessa configuração o x na direção vertical do joystick e y na honrizontal.
         */
 
         // Seleciona o ADC para eixo Y. O pino 26 como entrada analógica
@@ -105,20 +108,40 @@ int main(void)
 
         printf("Valor em y: %d \n", adc_value_y); // prints para poder debbugar o código
         printf("Valor em x: %d \n", adc_value_x); // prints para poder debbugar o código
+                                                  /*
+                                                  testes
+                                                  sleep_ms(200);
+                                          
+                                                      for (int i = 0; i < 6; i++)
+                                                      {
+                                                          draw_border(&ssd, i);
+                                                          ssd1306_send_data(&ssd);
+                                                          sleep_ms(1000);
+                                                          ssd1306_fill(&ssd, false);
+                                                          ssd1306_send_data(&ssd);
+                                                      }
+                                          
+                                                  */
 
-        sleep_ms(200);
+        // Calcula a posição do quadrado no eixo X
+        square_x = (WIDTH / 2 - SQUARE_SIZE / 2) + ((int32_t)(adc_value_x - 2048) * (WIDTH - SQUARE_SIZE)) / 4096;
 
-        for (int i = 0; i < 6; i++)
-        {
-            draw_border(&ssd, i);
-            ssd1306_send_data(&ssd);
-            sleep_ms(1000);
-            ssd1306_fill(&ssd, false);
-            ssd1306_send_data(&ssd);
-        }
+        // Calcula a posição do quadrado no eixo Y (invertido(sinal de mensos) porque estava com erro.)
+        square_y = (HEIGHT / 2 - SQUARE_SIZE / 2) - ((int32_t)(adc_value_y - 2048) * (HEIGHT - SQUARE_SIZE)) / 4096;
 
-        
+        // Limites do quadrado no eixo X
+        square_x = (square_x < 0) ? 0 : (square_x > WIDTH - SQUARE_SIZE) ? WIDTH - SQUARE_SIZE : square_x;
 
+        // Limites do quadrado no eixo Y
+        square_y = (square_y < 0) ? 0 : (square_y > HEIGHT - SQUARE_SIZE) ? HEIGHT - SQUARE_SIZE : square_y;
+
+        // Atualização do ssd
+        ssd1306_fill(&ssd, false);
+        draw_border(&ssd, border_style);
+        draw_square(&ssd, square_x, square_y);
+        ssd1306_send_data(&ssd);
+
+        sleep_ms(20); // Pequeno delay para estabilidade
     }
 
     return 0;
