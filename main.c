@@ -22,14 +22,14 @@ static const uint32_t LED_RED_PIN = 13;
 static const uint32_t I2C_SDA = 14;
 static const uint32_t I2C_SCL = 15;
 
-// Configurações do display
-#define DISPLAY_WIDTH 128
-#define DISPLAY_HEIGHT 64
-#define SQUARE_SIZE 8
-#define I2C_ADDR 0x3C
+// Definindo constantes para os parâmetros do I2C e do display
+#define I2C_PORT i2c1
+#define I2C_SDA 14
+#define I2C_SCL 15
+#define endereco 0x3C
 
 // Variáveis globais
-static ssd1306_t display;
+static ssd1306_t ssd;                         // Variável global para o display
 static volatile bool led_green_state = false; // variável para ficar alterando o estado do led verde ao apertar o botão do joystick
 static volatile bool pwm_enabled = true;
 static volatile uint8_t border_style = 0;
@@ -65,6 +65,37 @@ int main(void)
     setup_pwm(LED_BLUE_PIN);
     gpio_init(LED_GREEN_PIN);
     gpio_set_dir(LED_GREEN_PIN, GPIO_OUT);
+
+    // Inicialização do I2C a 400 kHz
+    i2c_init(I2C_PORT, 400 * 1000);
+
+    // Configura os pinos GPIO para a função I2C
+    gpio_set_function(I2C_SDA, GPIO_FUNC_I2C); // Configura o pino de dados para I2C
+    gpio_set_function(I2C_SCL, GPIO_FUNC_I2C); // Configura o pino de clock para I2C
+    gpio_pull_up(I2C_SDA);                     // Ativa o pull-up no pino de dados
+    gpio_pull_up(I2C_SCL);                     // Ativa o pull-up no pino de clock
+
+    // Inicialização e configuração do display SSD1306                                               // Cria a estrutura do display
+    ssd1306_init(&ssd, WIDTH, HEIGHT, false, endereco, I2C_PORT); // Inicializa o display com as especificações fornecidas
+    ssd1306_config(&ssd);                                         // Configura os parâmetros do display
+    ssd1306_send_data(&ssd);                                      // Envia os dados iniciais de configuração para o display
+
+    // Limpeza do display. O display inicia com todos os pixels apagados.
+    ssd1306_fill(&ssd, false); // Preenche o display com o valor especificado (false = apagado)
+    ssd1306_send_data(&ssd);   // Envia os dados de preenchimento para o display
+
+    uint16_t adc_value_x;
+    uint16_t adc_value_y;
+
+    while (true)
+    {
+        adc_select_input(0); // Seleciona o ADC para eixo X. O pino 26 como entrada analógica
+        adc_value_x = adc_read();
+        adc_select_input(1); // Seleciona o ADC para eixo Y. O pino 27 como entrada analógica
+        adc_value_y = adc_read();
+
+        
+    }
 
     return 0;
 }
