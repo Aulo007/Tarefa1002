@@ -108,9 +108,16 @@ int main(void)
 
         sleep_ms(200);
 
+        for (int i = 0; i < 6; i++)
+        {
+            draw_border(&ssd, i);
+            ssd1306_send_data(&ssd);
+            sleep_ms(1000);
+            ssd1306_fill(&ssd, false);
+            ssd1306_send_data(&ssd);
+        }
+
         
-
-
 
     }
 

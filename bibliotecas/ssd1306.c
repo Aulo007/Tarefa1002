@@ -196,6 +196,82 @@ void ssd1306_draw_char(ssd1306_t *ssd, char c, uint8_t x, uint8_t y)
   }
 }
 
+// Desenha borda estilizada no display (0-5 estilos)
+void draw_border(ssd1306_t *display, uint8_t style)
+{
+  switch (style % 6)
+  {       // 6 estilos diferentes
+  case 0: // Estilo minimalista
+    ssd1306_rect(display, 0, 0, WIDTH, HEIGHT, true, false);
+    break;
+
+  case 1: // Moldura dupla moderna
+    ssd1306_rect(display, 0, 0, WIDTH, HEIGHT, true, false);
+    ssd1306_rect(display, 3, 3, WIDTH - 6, HEIGHT - 6, true, false);
+    break;
+
+  case 2: // Cantos estilizados
+    // Linhas principais
+    ssd1306_rect(display, 4, 4, WIDTH - 8, HEIGHT - 8, true, false);
+
+    // Detalhes decorativos nos cantos
+    ssd1306_line(display, 0, 0, 7, 0, true);                                                                   // Topo esquerdo
+    ssd1306_line(display, 0, 0, 0, 7, true);                                                                   // Lateral esquerda
+    ssd1306_line(display, WIDTH - 1, 0, WIDTH - 8, 0, true);                                   // Topo direito
+    ssd1306_line(display, WIDTH - 1, 0, WIDTH - 1, 7, true);                                   // Lateral direita
+    ssd1306_line(display, 0, HEIGHT - 1, 7, HEIGHT - 1, true);                                 // Base esquerda
+    ssd1306_line(display, 0, HEIGHT - 8, 0, HEIGHT - 1, true);                                 // Lateral esquerda
+    ssd1306_line(display, WIDTH - 1, HEIGHT - 1, WIDTH - 8, HEIGHT - 1, true); // Base direita
+    ssd1306_line(display, WIDTH - 1, HEIGHT - 8, WIDTH - 1, HEIGHT - 1, true); // Lateral direita
+    break;
+
+  case 3: // Efeito tridimensional
+    // Sombras
+    ssd1306_line(display, 1, 1, WIDTH - 2, 1, true);  // Topo
+    ssd1306_line(display, 1, 1, 1, HEIGHT - 2, true); // Lateral
+
+    // Realces
+    ssd1306_line(display, WIDTH - 1, 1, WIDTH - 1, HEIGHT - 1, false);  // Lateral direita
+    ssd1306_line(display, 1, HEIGHT - 1, WIDTH - 1, HEIGHT - 1, false); // Base
+
+    // Moldura principal
+    ssd1306_rect(display, 0, 0, WIDTH, HEIGHT, true, false);
+    break;
+
+  case 4: // Cantos arredondados
+    // Linhas principais
+    ssd1306_line(display, 3, 0, WIDTH - 4, 0, true);                                   // Topo
+    ssd1306_line(display, 0, 3, 0, HEIGHT - 4, true);                                  // Lateral esquerda
+    ssd1306_line(display, WIDTH - 1, 3, WIDTH - 1, HEIGHT - 4, true);  // Lateral direita
+    ssd1306_line(display, 3, HEIGHT - 1, WIDTH - 4, HEIGHT - 1, true); // Base
+
+    // Arredondamento dos cantos
+    const uint8_t corners[12][2] = {{1, 1}, {0, 2}, {2, 0}, // Canto superior esquerdo
+                                    {WIDTH - 2, 0},
+                                    {WIDTH - 1, 1},
+                                    {WIDTH - 3, 0}, // Canto superior direito
+                                    {WIDTH - 1, HEIGHT - 2},
+                                    {WIDTH - 2, HEIGHT - 1},
+                                    {WIDTH - 3, HEIGHT - 1}, // Canto inferior direito
+                                    {1, HEIGHT - 1},
+                                    {0, HEIGHT - 2},
+                                    {2, HEIGHT - 1}}; // Canto inferior esquerdo
+
+    for (uint8_t i = 0; i < 12; i++)
+    {
+      ssd1306_pixel(display, corners[i][0], corners[i][1], true);
+    }
+    break;
+
+  case 5: // Efeito de profundidade
+    for (uint8_t i = 0; i < 3; i++)
+    {
+      ssd1306_rect(display, i * 2, i * 2, WIDTH - (i * 4), HEIGHT - (i * 4), true, false);
+    }
+    break;
+  }
+}
+
 // Função para desenhar uma string
 void ssd1306_draw_string(ssd1306_t *ssd, const char *str, uint8_t x, uint8_t y)
 {
