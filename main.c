@@ -92,6 +92,10 @@ int main(void)
     int16_t square_x;
     int16_t square_y;
 
+    // Configuração da interrupção com o callback
+    gpio_set_irq_enabled_with_callback(SW_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
+    gpio_set_irq_enabled_with_callback(BUTTON_A, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handle);
+
     while (true)
     {
 
@@ -195,4 +199,13 @@ static void gpio_irq_handle(uint gpio, uint32_t events)
         return 0; // Ou seja, se não der o tempo do debouce já mata o código aqui.
 
     last_button_time = current_time_us;
+
+    if (gpio == SW_PIN)
+    {
+
+    }
+    else if
+    {
+        
+    }
 }
