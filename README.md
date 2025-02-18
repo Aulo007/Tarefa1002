@@ -6,4 +6,4 @@ Depois disso, ir no raspberry pi pico project e importar o projeto da pasta Tare
 
 Após isso, espere carregar/criar as dependencia e clique no run no parte inferior do vscode no modo bootshell da máquina: Se divirta:D
 
-Link do vídeo apresentado o projeto: Em breve
+Link do vídeo apresentado o projeto: https://youtu.be/xX96QpatvFE
