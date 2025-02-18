@@ -19,7 +19,7 @@ set(sdkVersion 2.1.0)
 set(toolchainVersion 13_3_Rel1)
 set(picotoolVersion 2.1.0)
 set(picoVscode ${USERHOME}/.pico-sdk/cmake/pico-vscode.cmake)
-if (EXISTS ${picoVscode})
+if(EXISTS ${picoVscode})
     include(${picoVscode})
 endif()
 # ====================================================================================
@@ -35,7 +35,7 @@ pico_sdk_init()
 
 # Add executable. Default name is the project name, version 0.1
 
-add_executable(main main.c )
+add_executable(main main.c bibliotecas/ssd1306.c)
 
 pico_set_program_name(main "main")
 pico_set_program_version(main "0.1")
@@ -46,17 +46,22 @@ pico_enable_stdio_usb(main 1)
 
 # Add the standard library to the build
 target_link_libraries(main
-        pico_stdlib)
+    pico_stdlib)
 
 # Add the standard include files to the build
 target_include_directories(main PRIVATE
-        ${CMAKE_CURRENT_LIST_DIR}
+    ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Add any user requested libraries
-target_link_libraries(main 
-        hardware_adc
-        )
+target_link_libraries(main
+    hardware_adc
+    hardware_pwm
+    hardware_i2c
+    hardware_pio
+    hardware_clocks
+    hardware_gpio
+)
 
 pico_add_extra_outputs(main)
 
